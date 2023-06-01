@@ -45,19 +45,29 @@ const getmata_kuliah = async (req, res) => {
 const insertmata_kuliah = async (req, res) => {
     try {
 
-        const checkData = await pool.query("select * from mata_kuliah where id_matkul = ?", [req.body.id_matkul]);
+        const checkDosen = await pool.query("select * from dosen where nidn = ?", [req.body.nidn]);
 
-        if (checkData.length == 0) {
-            await pool.query("insert into mata_kuliah set ?", [req.body])
-            const insertData = await pool.query("select * from mata_kuliah where id_matkul = ?", [req.body.id_matkul]);
-            return res.status(200).json({
-                message: "Data berhasil ditambahkan!",
-                data: insertData[0]
-            });
+        if (!checkDosen.length == 0) {
+            const checkData = await pool.query("select * from mata_kuliah where id_matkul = ?", [req.body.id_matkul]);
+
+            if (checkData.length == 0) {
+                await pool.query("insert into mata_kuliah set ?", [req.body])
+                const insertData = await pool.query("select * from mata_kuliah where id_matkul = ?", [req.body.id_matkul]);
+                return res.status(200).json({
+                    message: "Data berhasil ditambahkan!",
+                    data: insertData[0]
+                });
+            } else {
+                return res.status(500).json({
+                    message: `Data dengan id_matkul ${req.body.id_matkul} sudah ada!`,
+                    data: checkData[0]
+                })
+            }
+
         } else {
             return res.status(500).json({
-                message: `Data dengan id_matkul ${req.body.id_matkul} sudah ada!`,
-                data: checkData[0]
+                message: `Tidak ada dosen dengan nidn ${req.body.nidn}!`,
+                data: {},
             })
         }
 
