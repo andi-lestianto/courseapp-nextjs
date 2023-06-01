@@ -1,4 +1,5 @@
 import { pool } from "config/db";
+import md5 from "md5";
 
 export default async function handler(req, res) {
     console.log(req.body);
@@ -14,11 +15,11 @@ const login = async (req, res) => {
     try {
         const result = await pool.query("select * from user where email = ? and password = ?", [
             req.body.email,
-            req.body.password
+            md5(req.body.password)
         ]);
         if (result.length == 0) {
             return res.status(200).json({
-                message: 'Login gagal, data tidak ditemukan',
+                message: 'Login gagal, username atau password salah!',
                 data: {},
             });
         }

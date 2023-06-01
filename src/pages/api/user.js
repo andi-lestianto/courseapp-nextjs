@@ -1,11 +1,12 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 
 import { pool } from "config/db";
+import md5 from "md5";
 
 export default async function handler(req, res) {
     switch (req.method) {
         case "GET":
-            if (req.query.email == null) {
+            if (req.query.iduser == null) {
                 return await getalluser(req, res);
             } else {
                 return await getuser(req, res);
@@ -32,8 +33,8 @@ const getalluser = async (req, res) => {
 
 const getuser = async (req, res) => {
     try {
-        const result = await pool.query("select * from user where email = ?", [
-            req.query.email,
+        const result = await pool.query("select * from user where iduser = ?", [
+            req.query.iduser,
         ]);
         return res.status(200).json(result[0]);
     } catch (error) {
@@ -46,6 +47,7 @@ const insertuser = async (req, res) => {
         const checkData = await pool.query("select * from user where email = ?", [req.body.email]);
 
         if (checkData.length == 0) {
+            req.body.password = md5(req.body.password);
             await pool.query("insert into user set ?", [req.body])
             const insertData = await pool.query("select * from user where email = ?", [req.body.email]);
             return res.status(200).json({
@@ -55,7 +57,7 @@ const insertuser = async (req, res) => {
         } else {
             return res.status(500).json({
                 message: `Data dengan email ${req.body.email} sudah ada!`,
-                data: checkData[0]
+                data: {}
             })
         }
 
@@ -66,17 +68,17 @@ const insertuser = async (req, res) => {
 
 const deleteuser = async (req, res) => {
     try {
-        const result = await pool.query("select * from user where email = ?", [req.query.email]);
+        const result = await pool.query("select * from user where iduser = ?", [req.query.iduser]);
 
         if (!result.length == 0) {
-            await pool.query("delete from user where email = ?", [req.query.email]);
+            await pool.query("delete from user where iduser = ?", [req.query.iduser]);
             return res.status(500).json({
-                message: `Data dengan email ${req.query.email} berhasil dihapus!`,
+                message: `User dengan nama ${result[0].name} berhasil dihapus!`,
                 data: {},
             });
         } else {
             return res.status(404).json({
-                message: `Data dengan email ${req.query.email} tidak ditemukan!`,
+                message: `User dengan id ${req.query.iduser} tidak ditemukan!`,
                 data: {},
             })
         }
@@ -88,16 +90,16 @@ const deleteuser = async (req, res) => {
 
 const updateuser = async (req, res) => {
     try {
-        const result = await pool.query("select * from user where email = ?", [req.body.email]);
-
+        const result = await pool.query("select * from user where iduser = ?", [req.query.iduser]);
 
         if (!result.length == 0) {
-            await pool.query("update user set password = ? where email = ?", [
-                req.body.password,
-                req.body.email,
-            ]);
+            req.body.password = md5(req.body.password),
+                await pool.query("update user set ? where iduser = ?", [
+                    req.body,
+                    req.query.iduser,
+                ]);
 
-            const updatedData = await pool.query("select * from user where email = ?", [req.body.email]);
+            const updatedData = await pool.query("select * from user where iduser = ?", [req.query.iduser]);
 
             return res.status(200).json({
                 message: 'Data berhasil diupdate!',
@@ -105,7 +107,7 @@ const updateuser = async (req, res) => {
             });
         } else {
             return res.status(200).json({
-                message: `Data dengan email ${req.body.email} tidak ditemukan`,
+                message: `Data dengan iduser ${req.query.iduser} tidak ditemukan`,
                 data: {},
             })
         }
