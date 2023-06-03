@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
 const getallmata_kuliah = async (req, res) => {
     try {
-        const result = await pool.query("select * from mata_kuliah");
+        const result = await pool.query("SELECT mata_kuliah.id_matkul, mata_kuliah.nama_matkul, mata_kuliah.jml_sks, mata_kuliah.semester, mata_kuliah.nidn, dosen.nama_dosen FROM `mata_kuliah` INNER JOIN dosen ON mata_kuliah.nidn = dosen.nidn");
         return res.status(200).json(result);
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -84,7 +84,7 @@ const deletemata_kuliah = async (req, res) => {
         if (!result.length == 0) {
 
             await pool.query("delete from mata_kuliah where id_matkul = ?", [req.query.id_matkul]);
-            return res.status(500).json({
+            return res.status(200).json({
                 message: `Data dengan id_matkul ${req.query.id_matkul} berhasil dihapus!`,
                 data: {},
             });

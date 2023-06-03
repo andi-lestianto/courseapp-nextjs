@@ -72,7 +72,7 @@ const deleteuser = async (req, res) => {
 
         if (!result.length == 0) {
             await pool.query("delete from user where iduser = ?", [req.query.iduser]);
-            return res.status(500).json({
+            return res.status(200).json({
                 message: `User dengan nama ${result[0].name} berhasil dihapus!`,
                 data: {},
             });
@@ -106,7 +106,7 @@ const updateuser = async (req, res) => {
                 data: updatedData[0],
             });
         } else {
-            return res.status(200).json({
+            return res.status(500).json({
                 message: `Data dengan iduser ${req.query.iduser} tidak ditemukan`,
                 data: {},
             })

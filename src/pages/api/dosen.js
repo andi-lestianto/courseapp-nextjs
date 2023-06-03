@@ -91,8 +91,8 @@ const deletedosen = async (req, res) => {
     if (!result.length == 0 && isnum) {
 
       await pool.query("delete from dosen where nidn = ?", [req.query.nidn]);
-      return res.status(500).json({
-        message: `Data dengan nidn ${req.query.nidn} berhasil dihapus!`,
+      return res.status(200).json({
+        message: `Data dengan nidn ${req.query.nidn} & nama ${result[0].nama_dosen} berhasil dihapus!`,
         data: {},
       });
     } else {
@@ -103,6 +103,9 @@ const deletedosen = async (req, res) => {
     }
 
   } catch (error) {
+    if (error.code == 'ER_ROW_IS_REFERENCED_2') {
+      return res.status(500).json({ message: 'Data yang dimodifikasi digunakan oleh data lain!' })
+    }
     return res.status(500).json({ message: error.message });
   }
 };
